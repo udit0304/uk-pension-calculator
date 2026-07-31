@@ -185,9 +185,6 @@
       border-color: #0b6e66;
       color: #ecfeff;
       padding: 14px;
-    }
-
-    .free-highlight-inner {
       background: rgba(255, 255, 255, 0.16);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 10px;
@@ -203,30 +200,48 @@
       font-weight: 700;
     }
 
-    .free-highlight-values {
-      display: flex;
-      flex-wrap: wrap;
+    .gain-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: stretch;
       gap: 10px;
-      align-items: baseline;
     }
 
-    .free-highlight .big {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: 0.01em;
+    .gain-box {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 10px;
+      padding: 10px 12px;
     }
 
-    .free-highlight .small {
-      font-size: 1rem;
+    .gain-label {
+      font-size: 0.78rem;
       font-weight: 700;
-      opacity: 0.96;
+      color: #d1fae5;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
     }
 
-    .free-highlight-cost {
-      font-size: 0.86rem;
-      font-weight: 600;
-      color: #e6fffb;
-      opacity: 0.96;
+    .gain-values {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #f0fdfa;
+    }
+
+    .gain-plus {
+      align-self: center;
+      justify-self: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #ecfeff;
     }
 
     .breakdown-table {
@@ -378,14 +393,10 @@
       box-shadow: 0 8px 20px rgba(13, 148, 136, 0.24);
     }
 
-    .results-panel .card.free-highlight .free-highlight-inner {
-      background: rgba(255, 255, 255, 0.16);
-      border-color: rgba(255, 255, 255, 0.28);
-    }
-
     .results-panel .card.free-highlight h2,
-    .results-panel .card.free-highlight .big,
-    .results-panel .card.free-highlight .small {
+    .results-panel .card.free-highlight .gain-label,
+    .results-panel .card.free-highlight .gain-values,
+    .results-panel .card.free-highlight .gain-plus {
       color: #f0fdfa;
     }
 
@@ -436,6 +447,17 @@
         grid-template-columns: 1fr;
       }
     }
+
+    @media (max-width: 640px) {
+      .gain-row {
+        grid-template-columns: 1fr;
+      }
+
+      .gain-plus {
+        width: 26px;
+        height: 26px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -481,14 +503,16 @@
       <div class="results-layout">
         <div class="stack">
           <article class="card free-highlight" aria-live="polite">
-            <div class="free-highlight-inner">
-              <h2>Total free money</h2>
-              <div class="free-highlight-values">
-                <span class="big" id="freeHeadlineAnnual">£0.00/yr</span>
-                <span class="small" id="freeHeadlineMonthly">£0.00/mo</span>
+            <h2>Your gain</h2>
+            <div class="gain-row">
+              <div class="gain-box">
+                <div class="gain-label">You invest</div>
+                <div class="gain-values"><span id="freeCostAnnual">£0.00/yr</span> | <span id="freeCostMonthly">£0.00/mo</span></div>
               </div>
-              <div class="free-highlight-cost">
-                Your actual cost: <span id="freeCostAnnual">£0.00/yr</span> | <span id="freeCostMonthly">£0.00/mo</span>
+              <div class="gain-plus">+</div>
+              <div class="gain-box">
+                <div class="gain-label">Free added</div>
+                <div class="gain-values"><span id="freeHeadlineAnnual">£0.00/yr</span> | <span id="freeHeadlineMonthly">£0.00/mo</span></div>
               </div>
             </div>
           </article>
@@ -530,7 +554,7 @@
                   <td><span class="tag tag-free">Free money</span></td>
                 </tr>
                 <tr class="highlight">
-                  <th scope="row">Your actual cost</th>
+                  <th scope="row">Take-home sacrifice</th>
                   <td class="value" id="actualAnnual">£0.00/yr</td>
                   <td class="value" id="actualMonthly">£0.00/mo</td>
                   <td><span class="tag tag-cost">Your money</span></td>
