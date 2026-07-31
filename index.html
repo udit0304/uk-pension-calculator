@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UK Pension Salary Sacrifice Calculator</title>
+  <style>
+    :root {
+      --bg: #f7f4ff;
+      --card: #ffffff;
+      --text: #1f1635;
+      --muted: #5b4b79;
+      --border: #e8def7;
+      --primary: #7c3aed;
+      --free: #0f766e;
+      --actual: #c2410c;
+      --shadow: 0 10px 24px rgba(40, 19, 84, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #f3e8ff 0%, var(--bg) 190px);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .wrapper {
+      width: min(1100px, 94vw);
+      margin: 28px auto 40px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      padding: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.35rem, 1.1rem + 1vw, 1.9rem);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .inputs {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid #c3cfdf;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+    }
+
+    input[type="number"]:focus-visible,
+    input[type="checkbox"]:focus-visible + .toggle-slider {
+      outline: 3px solid #bfdbfe;
+      outline-offset: 2px;
+    }
+
+    .salary-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0 2px;
+    }
+
+    .toggle-side {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      background: #cbd5e1;
+      border-radius: 999px;
+      transition: background 0.2s ease;
+      border: 1px solid #94a3b8;
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.24);
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: #2563eb;
+      border-color: #1d4ed8;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+
+    .results-layout {
+      padding: 20px 26px 24px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      background: #fbfdff;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .table-card {
+      padding: 16px 16px 10px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .free-highlight {
+      background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+      border-color: #0b6e66;
+      color: #ecfeff;
+      padding: 14px;
+    }
+
+    .free-highlight-inner {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 14px 14px 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .free-highlight h2 {
+      margin: 0;
+      color: #ecfeff;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .free-highlight-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .free-highlight .big {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .free-highlight .small {
+      font-size: 1rem;
+      font-weight: 700;
+      opacity: 0.96;
+    }
+
+    .free-highlight-cost {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #e6fffb;
+      opacity: 0.96;
+    }
+
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 12px 11px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .breakdown-table thead th {
+      background: #eef5ff;
+      color: #1e3a8a;
+      font-weight: 700;
+      font-size: 0.84rem;
+      letter-spacing: 0.01em;
+    }
+
+    .breakdown-table tbody tr:nth-child(even) {
+      background: #fbfdff;
+    }
+
+    .breakdown-table tbody tr.highlight {
+      background: #fffbeb;
+    }
+
+    .breakdown-table td.value {
+      font-weight: 600;
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .tag-free {
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .tag-cost {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .chart {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+      background: #f9fbff;
+      display: grid;
+      align-content: start;
+      justify-items: center;
+      gap: 8px;
+    }
+
+    .chart-note {
+      margin: 0;
+      color: #334155;
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      font-size: 0.86rem;
+      color: #334155;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .dot.free {
+      background: var(--free);
+    }
+
+    .dot.actual {
+      background: var(--actual);
+    }
+
+    .foot {
+      padding: 2px 26px 14px;
+      color: #64748b;
+      font-size: 0.82rem;
+    }
+
+    .support-wrap {
+      padding: 10px 0 0;
+    }
+
+    .support-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid #be123c;
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: #f8fafc;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      padding: 12px 18px;
+      box-shadow: 0 10px 24px rgba(225, 29, 72, 0.35);
+      transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .support-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(225, 29, 72, 0.42);
+    }
+
+    .results-panel {
+      background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+      border-color: #cfe1f7;
+    }
+
+    .results-panel .card {
+      background: #ffffff;
+      border-color: #cddff3;
+      box-shadow: 0 6px 16px rgba(30, 64, 175, 0.08);
+    }
+
+    .results-panel .card.free-highlight {
+      background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%);
+      border-color: #0b6e66;
+      color: #ecfeff;
+      box-shadow: 0 8px 20px rgba(13, 148, 136, 0.24);
+    }
+
+    .results-panel .card.free-highlight .free-highlight-inner {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .results-panel .card.free-highlight h2,
+    .results-panel .card.free-highlight .big,
+    .results-panel .card.free-highlight .small {
+      color: #f0fdfa;
+    }
+
+    .results-panel .table-card {
+      background: #fdfefe;
+    }
+
+    .results-panel .breakdown-table thead th {
+      background: #e6f4f1;
+      color: #115e59;
+    }
+
+    .results-panel .breakdown-table tbody tr:nth-child(even) {
+      background: #f9fcff;
+    }
+
+    .results-panel .breakdown-table tbody tr.highlight {
+      background: #fff7ed;
+    }
+
+    .results-panel .tag {
+      background: #eaf2ff;
+      color: #1d4ed8;
+    }
+
+    .results-panel .tag-free {
+      background: #ccfbf1;
+      color: #115e59;
+    }
+
+    .results-panel .tag-cost {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .results-panel .chart {
+      background: #f4f9ff;
+      border-color: #bfd5ee;
+    }
+
+    .results-panel .chart-note,
+    .results-panel .legend {
+      color: #334155;
+    }
+
+    @media (max-width: 900px) {
+      .results-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrapper">
+    <section class="panel header">
+      <h1>UK Pension Salary Sacrifice Calculator</h1>
+      <p class="subtitle">Tax year: 2026/27. Enter salary and contribution rates to see pension split, free money, and your real cost.</p>
+      <div class="support-wrap">
+        <a class="support-btn" href="https://buy.stripe.com/8x2cN4gUJbYf58W1fla3u03" target="_blank" rel="noopener noreferrer">Contribute to support this tool</a>
+      </div>
+    </section>
+
+    <section class="panel inputs" aria-label="Input controls">
+      <div class="field">
+        <label>Salary input type</label>
+        <div class="salary-toggle" aria-label="Salary input type toggle">
+          <span class="toggle-side">Annual</span>
+          <label class="toggle-switch">
+            <input id="salaryTypeToggle" type="checkbox" aria-label="Toggle monthly salary input">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-side">Monthly</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="grossSalary">Gross salary (before tax) £</label>
+          <input id="grossSalary" type="number" min="0" step="100" value="50000">
+        </div>
+        <div class="field">
+          <label for="employerPct">Employer contribution %</label>
+          <input id="employerPct" type="number" min="0" max="100" step="0.1" value="4">
+        </div>
+        <div class="field">
+          <label for="employeePct">Employee salary sacrifice %</label>
+          <input id="employeePct" type="number" min="0" max="100" step="0.1" value="5">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel results-panel">
+      <div class="results-layout">
+        <div class="stack">
+          <article class="card free-highlight" aria-live="polite">
+            <div class="free-highlight-inner">
+              <h2>Total free money</h2>
+              <div class="free-highlight-values">
+                <span class="big" id="freeHeadlineAnnual">£0.00/yr</span>
+                <span class="small" id="freeHeadlineMonthly">£0.00/mo</span>
+              </div>
+              <div class="free-highlight-cost">
+                Your actual cost: <span id="freeCostAnnual">£0.00/yr</span> | <span id="freeCostMonthly">£0.00/mo</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="card table-card">
+            <h2>Pension breakdown table</h2>
+            <table class="breakdown-table" aria-label="Pension contribution breakdown">
+              <thead>
+                <tr>
+                  <th scope="col">Component</th>
+                  <th scope="col">Annual</th>
+                  <th scope="col">Monthly</th>
+                  <th scope="col">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Employer contribution</th>
+                  <td class="value" id="employerAnnual">£0.00/yr</td>
+                  <td class="value" id="employerMonthly">£0.00/mo</td>
+                  <td><span class="tag tag-free">Free money</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Employee sacrifice (total)</th>
+                  <td class="value" id="sacrificeAnnual">£0.00/yr</td>
+                  <td class="value" id="sacrificeMonthly">£0.00/mo</td>
+                  <td><span class="tag">Into pension</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Income tax saved</th>
+                  <td id="taxSaveAnnual">£0.00/yr</td>
+                  <td id="taxSaveMonthly">£0.00/mo</td>
+                  <td><span class="tag tag-free">Free money</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">NI saved</th>
+                  <td id="niSaveAnnual">£0.00/yr</td>
+                  <td id="niSaveMonthly">£0.00/mo</td>
+                  <td><span class="tag tag-free">Free money</span></td>
+                </tr>
+                <tr class="highlight">
+                  <th scope="row">Your actual cost</th>
+                  <td class="value" id="actualAnnual">£0.00/yr</td>
+                  <td class="value" id="actualMonthly">£0.00/mo</td>
+                  <td><span class="tag tag-cost">Your money</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Total pension contribution</th>
+                  <td class="value" id="totalAnnual">£0.00/yr</td>
+                  <td class="value" id="totalMonthly">£0.00/mo</td>
+                  <td><span class="tag">Pension pot</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Total free money</th>
+                  <td id="freeAnnual">£0.00/yr</td>
+                  <td id="freeMonthly">£0.00/mo</td>
+                  <td><span class="tag tag-free">Free money</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </div>
+
+        <aside class="chart" aria-label="Pension money jar chart">
+          <h2>Pension Jar</h2>
+          <svg width="250" height="350" viewBox="0 0 250 350" role="img" aria-labelledby="jarTitle jarDesc">
+            <title id="jarTitle">Free money versus actual employee contribution</title>
+            <desc id="jarDesc">Jar chart split between free money and actual employee cost.</desc>
+            <defs>
+              <linearGradient id="glassGrad" x1="0" x2="1">
+                <stop offset="0%" stop-color="#f8fbff" stop-opacity="0.64"></stop>
+                <stop offset="50%" stop-color="#ffffff" stop-opacity="0.25"></stop>
+                <stop offset="100%" stop-color="#f1f8ff" stop-opacity="0.48"></stop>
+              </linearGradient>
+              <linearGradient id="lidGrad" x1="0" x2="1">
+                <stop offset="0%" stop-color="#94a3b8"></stop>
+                <stop offset="100%" stop-color="#64748b"></stop>
+              </linearGradient>
+              <linearGradient id="freeLiquidGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#14b8a6"></stop>
+                <stop offset="100%" stop-color="#0f766e"></stop>
+              </linearGradient>
+              <linearGradient id="actualLiquidGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ea580c"></stop>
+                <stop offset="100%" stop-color="#c2410c"></stop>
+              </linearGradient>
+              <clipPath id="jarClip">
+                <path d="M78 54 H172 Q182 54 182 64 V82 Q182 93 190 101 Q204 114 204 139 V274 Q204 308 170 308 H80 Q46 308 46 274 V139 Q46 114 60 101 Q68 93 68 82 V64 Q68 54 78 54 Z"></path>
+              </clipPath>
+            </defs>
+            <rect x="82" y="35" width="86" height="19" rx="6" fill="url(#lidGrad)"></rect>
+            <rect x="88" y="31" width="74" height="6" rx="3" fill="#cbd5e1"></rect>
+            <rect x="46" y="54" width="158" height="254" rx="34" fill="url(#glassGrad)"></rect>
+            <g clip-path="url(#jarClip)">
+              <rect x="46" y="54" width="158" height="254" fill="#f8fafc" fill-opacity="0.06"></rect>
+              <rect id="actualLiquid" x="46" y="300" width="158" height="0" fill="url(#actualLiquidGrad)" fill-opacity="0.96"></rect>
+              <rect id="freeLiquid" x="46" y="300" width="158" height="0" fill="url(#freeLiquidGrad)" fill-opacity="0.96"></rect>
+            </g>
+            <path d="M78 54 H172 Q182 54 182 64 V82 Q182 93 190 101 Q204 114 204 139 V274 Q204 308 170 308 H80 Q46 308 46 274 V139 Q46 114 60 101 Q68 93 68 82 V64 Q68 54 78 54 Z" fill="none" stroke="#334155" stroke-width="4"></path>
+            <text id="freePct" x="125" y="188" text-anchor="middle" fill="#ecfeff" font-size="16" font-weight="700">0%</text>
+            <text id="actualPct" x="125" y="274" text-anchor="middle" fill="#fffbeb" font-size="16" font-weight="700">0%</text>
+          </svg>
+          <p class="chart-note" id="jarSplitText">Free money 0.0% vs Your money 0.0%</p>
+          <div class="legend">
+            <span><span class="dot free"></span>Free money</span>
+            <span><span class="dot actual"></span>Your actual contribution cost</span>
+          </div>
+        </aside>
+      </div>
+      <p class="foot">Assumes salary sacrifice reduces taxable and NI-able pay; figures are estimates for England/Wales/Northern Ireland tax bands in 2026/27.</p>
+    </section>
+  </main>
+
+  <script>
+    const TAX_YEAR_2026_27 = {
+      personalAllowance: 12570,
+      paTaperStart: 100000,
+      paZeroPoint: 125140,
+      basicThreshold: 50270,
+      higherThreshold: 125140
+    };
+
+    const NI_2026_27 = {
+      primaryThreshold: 12570,
+      upperEarningsLimit: 50270,
+      mainRate: 0.08,
+      upperRate: 0.02
+    };
+
+    const els = {
+      salaryTypeToggle: document.getElementById('salaryTypeToggle'),
+      grossSalary: document.getElementById('grossSalary'),
+      employerPct: document.getElementById('employerPct'),
+      employeePct: document.getElementById('employeePct'),
+      employerAnnual: document.getElementById('employerAnnual'),
+      employerMonthly: document.getElementById('employerMonthly'),
+      sacrificeAnnual: document.getElementById('sacrificeAnnual'),
+      sacrificeMonthly: document.getElementById('sacrificeMonthly'),
+      taxSaveAnnual: document.getElementById('taxSaveAnnual'),
+      taxSaveMonthly: document.getElementById('taxSaveMonthly'),
+      niSaveAnnual: document.getElementById('niSaveAnnual'),
+      niSaveMonthly: document.getElementById('niSaveMonthly'),
+      actualAnnual: document.getElementById('actualAnnual'),
+      actualMonthly: document.getElementById('actualMonthly'),
+      totalAnnual: document.getElementById('totalAnnual'),
+      totalMonthly: document.getElementById('totalMonthly'),
+      freeAnnual: document.getElementById('freeAnnual'),
+      freeMonthly: document.getElementById('freeMonthly'),
+      freeHeadlineAnnual: document.getElementById('freeHeadlineAnnual'),
+      freeHeadlineMonthly: document.getElementById('freeHeadlineMonthly'),
+      freeCostAnnual: document.getElementById('freeCostAnnual'),
+      freeCostMonthly: document.getElementById('freeCostMonthly'),
+      actualLiquid: document.getElementById('actualLiquid'),
+      freeLiquid: document.getElementById('freeLiquid'),
+      freePct: document.getElementById('freePct'),
+      actualPct: document.getElementById('actualPct'),
+      jarSplitText: document.getElementById('jarSplitText')
+    };
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function readNumber(input, fallback = 0) {
+      const n = Number(input.value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function toCurrency(value) {
+      return new Intl.NumberFormat("en-GB", {
+        style: "currency",
+        currency: "GBP",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function effectivePersonalAllowance(annualGross) {
+      if (annualGross <= TAX_YEAR_2026_27.paTaperStart) {
+        return TAX_YEAR_2026_27.personalAllowance;
+      }
+      if (annualGross >= TAX_YEAR_2026_27.paZeroPoint) {
+        return 0;
+      }
+      const reduction = (annualGross - TAX_YEAR_2026_27.paTaperStart) / 2;
+      return clamp(TAX_YEAR_2026_27.personalAllowance - reduction, 0, TAX_YEAR_2026_27.personalAllowance);
+    }
+
+    function incomeTax(annualGross) {
+      const gross = Math.max(0, annualGross);
+      const allowance = effectivePersonalAllowance(gross);
+      const taxable = Math.max(0, gross - allowance);
+      const basicBandWidth = Math.max(0, TAX_YEAR_2026_27.basicThreshold - allowance);
+      const higherBandWidth = TAX_YEAR_2026_27.higherThreshold - TAX_YEAR_2026_27.basicThreshold;
+
+      const basicTaxable = Math.min(taxable, basicBandWidth);
+      const higherTaxable = Math.min(Math.max(0, taxable - basicTaxable), higherBandWidth);
+      const additionalTaxable = Math.max(0, taxable - basicTaxable - higherTaxable);
+
+      return basicTaxable * 0.2 + higherTaxable * 0.4 + additionalTaxable * 0.45;
+    }
+
+    function employeeNI(annualGross) {
+      const gross = Math.max(0, annualGross);
+      if (gross <= NI_2026_27.primaryThreshold) {
+        return 0;
+      }
+      if (gross <= NI_2026_27.upperEarningsLimit) {
+        return (gross - NI_2026_27.primaryThreshold) * NI_2026_27.mainRate;
+      }
+      const mainBand = (NI_2026_27.upperEarningsLimit - NI_2026_27.primaryThreshold) * NI_2026_27.mainRate;
+      const upperBand = (gross - NI_2026_27.upperEarningsLimit) * NI_2026_27.upperRate;
+      return mainBand + upperBand;
+    }
+
+    function getSalaryType() {
+      return els.salaryTypeToggle.checked ? "monthly" : "annual";
+    }
+
+    function annualFromInput() {
+      const salary = Math.max(0, readNumber(els.grossSalary));
+      return getSalaryType() === "monthly" ? salary * 12 : salary;
+    }
+
+    function calculateBreakdown() {
+      const annualGross = annualFromInput();
+      const employerPct = clamp(readNumber(els.employerPct, 4), 0, 100) / 100;
+      const employeePct = clamp(readNumber(els.employeePct, 5), 0, 100) / 100;
+
+      const employeeSacrifice = annualGross * employeePct;
+      const reducedGross = Math.max(0, annualGross - employeeSacrifice);
+      const employerContribution = annualGross * employerPct;
+
+      const taxSaving = Math.max(0, incomeTax(annualGross) - incomeTax(reducedGross));
+      const niSaving = Math.max(0, employeeNI(annualGross) - employeeNI(reducedGross));
+      const actualCost = Math.max(0, employeeSacrifice - taxSaving - niSaving);
+
+      const totalPension = employerContribution + employeeSacrifice;
+      const totalFreeMoney = employerContribution + taxSaving + niSaving;
+
+      return {
+        employerContribution,
+        employeeSacrifice,
+        taxSaving,
+        niSaving,
+        actualCost,
+        totalPension,
+        totalFreeMoney
+      };
+    }
+
+    function yrMo(annualValue) {
+      return {
+        annual: toCurrency(annualValue) + "/yr",
+        monthly: toCurrency(annualValue / 12) + "/mo"
+      };
+    }
+
+    function drawJar(totalFreeMoney, totalActualCost) {
+      const jarTop = 106;
+      const jarBottom = 300;
+      const jarHeight = jarBottom - jarTop;
+      const total = totalFreeMoney + totalActualCost;
+
+      if (total <= 0) {
+        els.actualLiquid.setAttribute("y", String(jarBottom));
+        els.actualLiquid.setAttribute("height", "0");
+        els.freeLiquid.setAttribute("y", String(jarBottom));
+        els.freeLiquid.setAttribute("height", "0");
+        els.freePct.textContent = "0%";
+        els.actualPct.textContent = "0%";
+        els.freePct.setAttribute("y", "188");
+        els.actualPct.setAttribute("y", "274");
+        els.jarSplitText.textContent = "Free money 0.0% vs Your money 0.0%";
+        return;
+      }
+      const freePct = totalFreeMoney / total;
+      const actualPct = totalActualCost / total;
+      const actualHeight = jarHeight * actualPct;
+      const freeHeight = jarHeight * freePct;
+      const actualY = jarBottom - actualHeight;
+      const freeY = actualY - freeHeight;
+
+      els.actualLiquid.setAttribute("y", String(actualY));
+      els.actualLiquid.setAttribute("height", String(actualHeight));
+      els.freeLiquid.setAttribute("y", String(freeY));
+      els.freeLiquid.setAttribute("height", String(freeHeight));
+
+      els.freePct.textContent = (freePct * 100).toFixed(1) + "%";
+      els.actualPct.textContent = (actualPct * 100).toFixed(1) + "%";
+      els.freePct.setAttribute("y", String(freeY + Math.max(18, freeHeight / 2)));
+      els.actualPct.setAttribute("y", String(actualY + Math.max(18, actualHeight / 2)));
+      els.jarSplitText.textContent = `Free money ${(freePct * 100).toFixed(1)}% vs Your money ${(actualPct * 100).toFixed(1)}%`;
+    }
+
+    function render() {
+      const breakdown = calculateBreakdown();
+
+      const employer = yrMo(breakdown.employerContribution);
+      const sacrifice = yrMo(breakdown.employeeSacrifice);
+      const taxSave = yrMo(breakdown.taxSaving);
+      const niSave = yrMo(breakdown.niSaving);
+      const actual = yrMo(breakdown.actualCost);
+      const total = yrMo(breakdown.totalPension);
+      const free = yrMo(breakdown.totalFreeMoney);
+
+      els.employerAnnual.textContent = employer.annual;
+      els.employerMonthly.textContent = employer.monthly;
+
+      els.sacrificeAnnual.textContent = sacrifice.annual;
+      els.sacrificeMonthly.textContent = sacrifice.monthly;
+
+      els.taxSaveAnnual.textContent = taxSave.annual;
+      els.taxSaveMonthly.textContent = taxSave.monthly;
+
+      els.niSaveAnnual.textContent = niSave.annual;
+      els.niSaveMonthly.textContent = niSave.monthly;
+
+      els.actualAnnual.textContent = actual.annual;
+      els.actualMonthly.textContent = actual.monthly;
+
+      els.totalAnnual.textContent = total.annual;
+      els.totalMonthly.textContent = total.monthly;
+
+      els.freeAnnual.textContent = free.annual;
+      els.freeMonthly.textContent = free.monthly;
+      els.freeHeadlineAnnual.textContent = free.annual;
+      els.freeHeadlineMonthly.textContent = free.monthly;
+      els.freeCostAnnual.textContent = actual.annual;
+      els.freeCostMonthly.textContent = actual.monthly;
+
+      drawJar(breakdown.totalFreeMoney, breakdown.actualCost);
+    }
+
+    [els.salaryTypeToggle, els.grossSalary, els.employerPct, els.employeePct].forEach((input) => {
+      input.addEventListener("input", render);
+      input.addEventListener("change", render);
+    });
+
+    render();
+  </script>
+</body>
+</html>
